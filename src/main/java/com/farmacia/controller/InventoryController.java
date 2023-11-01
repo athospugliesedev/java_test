@@ -1,5 +1,6 @@
 package com.farmacia.controller;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.farmacia.model.Inventory;
 import com.farmacia.repository.InventoryRepository;
@@ -21,13 +22,45 @@ public class InventoryController {
         Inventory createdInventory = inventoryRepository.save(inventory);
         return createdInventory;
     }
-    
 
     @GetMapping("/all")
     public List<Inventory> getAllInventory() {
         return inventoryRepository.findAll();
     }
-    
+
+    @GetMapping("/list")
+    public ResponseEntity<List<Inventory>> listAllInventory() {
+        List<Inventory> inventoryList = inventoryRepository.findAll();
+        if (inventoryList.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(inventoryList);
+    }
+
+    @PutMapping("/update-quantity/{id}")
+    public ResponseEntity<Inventory> updateInventoryQuantity(@PathVariable Long id, @RequestParam int newQuantity) {
+        Optional<Inventory> existingInventory = inventoryRepository.findById(id);
+
+        if (existingInventory.isPresent()) {
+            Inventory inventory = existingInventory.get();
+            inventory.setQuantity(newQuantity);
+            Inventory updatedInventory = inventoryRepository.save(inventory);
+            return ResponseEntity.ok(updatedInventory);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Inventory> getInventoryById(@PathVariable Long id) {
+        Optional<Inventory> inventory = inventoryRepository.findById(id);
+
+        if (inventory.isPresent()) {
+            return ResponseEntity.ok(inventory.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
     @PutMapping("/update/{id}")
     public Inventory updateInventory(@PathVariable Long id, @RequestBody Inventory updatedInventory) {
